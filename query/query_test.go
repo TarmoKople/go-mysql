@@ -35,8 +35,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/percona/go-mysql/query"
-	_ "github.com/percona/go-mysql/test"
+	"github.com/TarmoKople/go-mysql/query"
+	_ "github.com/TarmoKople/go-mysql/test"
 )
 
 func TestFingerprintBasic(t *testing.T) {
@@ -556,6 +556,14 @@ func TestFingerprintPanicChallenge2(t *testing.T) {
 		"select ? ? ? ? from kamil",
 		query.Fingerprint(q),
 	)
+
+	q = "select col1 from tb1 where cond1 in(1) and cond2 in(2)"
+	assert.Equal(
+		t,
+		"select col1 from tb1 where cond1 in(?+) and cond2 in(?+)",
+		query.Fingerprint(q),
+	)
+
 }
 
 func TestFingerprintDashesInNames(t *testing.T) {
@@ -649,4 +657,13 @@ func TestFingerprintWithNumberInDbName(t *testing.T) {
 		"select 123foo from 123foo",
 		query.Fingerprint(q),
 	)
+
+	// fix fi overflow cause index out of range panic
+	q = "insert into tb values(1)"
+	assert.Equal(
+		t,
+		"insert into tb values(?+)",
+		query.Fingerprint(q),
+	)
+
 }

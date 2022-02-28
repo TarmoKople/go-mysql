@@ -170,7 +170,10 @@ func Fingerprint(q string) string {
 		if Debug {
 			fmt.Printf("\n%d:%d %s/%s [%d:%d] %x %q\n", qi, fi, stateName[s], stateName[sqlState], cpFromOffset, cpToOffset, r, r)
 		}
-
+		// check `fi` overflow
+		if fi >= len(f) {
+			break
+		}
 		/**
 		 * 1. Skip parts of the query for certain states.
 		 */
@@ -379,6 +382,9 @@ func Fingerprint(q string) string {
 			valueNo++
 			if valueNo == 1 {
 				if qi-firstPar > 1 {
+					if qi-firstPar == 2 {
+						f = append(f, 0)
+					}
 					copy(f[fi:fi+4], "(?+)")
 					fi += 4
 				} else {
